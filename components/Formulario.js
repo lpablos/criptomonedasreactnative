@@ -1,11 +1,9 @@
 import React, {useState, useEffect} from 'react';
-import {Text, View, StyleSheet, TouchableHighlight} from 'react-native';
+import {Text, View, StyleSheet, TouchableHighlight, Alert} from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 import axios from 'axios';
 
-const Formulario = () => {
-  const [moneda, setMoneda] = useState('');
-  const [criptomoneda, setCriptomoneda] = useState('');
+const Formulario = ({moneda, criptomoneda, consultarAPI, setMoneda, setCriptomoneda, setConsultarAPI}) => {
   const [criptomonedas, setCriptomonedas] = useState([]);
 
   const obtenerMoneda = moneda => {
@@ -16,12 +14,24 @@ const Formulario = () => {
   };
 
   const cotizarPrecio = () => {
-    console.log('Estas enviadno la cotizacion');
-  }
+    if (moneda.trim() === '' || criptomoneda.trim() === '') {
+      mostrarAlerta();
+      return;
+    }
+    console.log('Pasa la validacion');
+    setConsultarAPI(true);
+  };
+  const mostrarAlerta = () =>{
+    Alert.alert('Error', 'Ambos campos son obligatorios',[
+      {text: 'OK', onPress: () => console.log('OK Pressed')},
+    ]);
+  };
 
   useEffect(() => {
     const consultarAPI = async () => {
-      const resultado = await axios.get('https://min-api.cryptocompare.com/data/top/mktcapfull?limit=10&tsym=USD');
+      const resultado = await axios.get(
+        'https://min-api.cryptocompare.com/data/top/mktcapfull?limit=10&tsym=USD',
+      );
       setCriptomonedas(resultado.data.Data);
     };
     consultarAPI();
@@ -52,7 +62,9 @@ const Formulario = () => {
           />
         ))}
       </Picker>
-      <TouchableHighlight style={styles.btnCotizar} onPress={() => cotizarPrecio()}>
+      <TouchableHighlight
+        style={styles.btnCotizar}
+        onPress={() => cotizarPrecio()}>
         <Text style={styles.textoCotizar}>Cotizar</Text>
       </TouchableHighlight>
     </View>
@@ -74,6 +86,7 @@ const styles = StyleSheet.create({
   },
   textoCotizar: {
     textColor: '#FFF',
+    color: '#FFF',
     fontSize: 18,
     fontFamily: 'Lato-Black',
     textTransform: 'uppercase',

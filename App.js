@@ -6,21 +6,51 @@
  * @flow strict-local
  */
 
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 // Librerias
 import {StyleSheet, Image, View} from 'react-native';
 
 // Components of aplication
 import Header from './components/Header';
 import Formulario from './components/Formulario';
+import Cotizacion from './components/Cotizacion';
+
+import axios from 'axios';
+
+
 
 const App = () => {
+  const [moneda, setMoneda] = useState('');
+  const [criptomoneda, setCriptomoneda] = useState('');
+  const [consultarAPI, setConsultarAPI] = useState(false);
+  const [resultado, setResultado] = useState('');
+
+  useEffect(() => {
+    const cotizarCriptomoneda = async () => {
+      if (consultarAPI){
+        const resultado = await axios.get(
+          `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${criptomoneda}&tsyms=${moneda}`,          
+        );
+        setResultado(resultado.data.DISPLAY[criptomoneda][moneda]);
+        setConsultarAPI(false);
+      }
+    };
+    cotizarCriptomoneda();
+  }, [consultarAPI, criptomoneda, moneda]);
   return (
     <>
       <Header />
       <Image style={styles.imagen} source={require('./assets/img/cryptomonedas.png')} />
       <View style={styles.contenido}>
-        <Formulario />
+        <Formulario
+          moneda={moneda}
+          criptomoneda={criptomoneda}
+          consultarAPI={consultarAPI}
+          setMoneda={setMoneda}
+          setCriptomoneda={setCriptomoneda}
+          setConsultarAPI={setConsultarAPI}
+        />
+        <Cotizacion resultado={resultado}/>
       </View>
     </>
   );
