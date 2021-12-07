@@ -8,7 +8,7 @@
 
 import React, {useState, useEffect} from 'react';
 // Librerias
-import {StyleSheet, Image, View} from 'react-native';
+import {StyleSheet, Image, View, ScrollView, ActivityIndicator } from 'react-native';
 
 // Components of aplication
 import Header from './components/Header';
@@ -24,21 +24,31 @@ const App = () => {
   const [criptomoneda, setCriptomoneda] = useState('');
   const [consultarAPI, setConsultarAPI] = useState(false);
   const [resultado, setResultado] = useState('');
+  const [ cargando, setCargando] = useState(false);
 
   useEffect(() => {
     const cotizarCriptomoneda = async () => {
       if (consultarAPI){
+        setCargando(true);
         const resultado = await axios.get(
-          `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${criptomoneda}&tsyms=${moneda}`,          
-        );
-        setResultado(resultado.data.DISPLAY[criptomoneda][moneda]);
-        setConsultarAPI(false);
+          `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${criptomoneda}&tsyms=${moneda}` );
+          setTimeout(() => {
+            setResultado(resultado.data.DISPLAY[criptomoneda][moneda]);
+            setConsultarAPI(false);       
+            setCargando(false);   
+        }, 3000);
       }
     };
     cotizarCriptomoneda();
   }, [consultarAPI, criptomoneda, moneda]);
+
+
+  const componente = cargando ? <ActivityIndicator size="large" color="#5E49E2" /> : <Cotizacion  resultado={resultado} />
+
+
   return (
     <>
+     <ScrollView>
       <Header />
       <Image style={styles.imagen} source={require('./assets/img/cryptomonedas.png')} />
       <View style={styles.contenido}>
@@ -50,8 +60,12 @@ const App = () => {
           setCriptomoneda={setCriptomoneda}
           setConsultarAPI={setConsultarAPI}
         />
-        <Cotizacion resultado={resultado}/>
       </View>
+      <View style={{ marginTop: 40 }}>
+          {componente}
+      </View>
+
+      </ScrollView>
     </>
   );
 };
